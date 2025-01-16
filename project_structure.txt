@@ -1,0 +1,14 @@
+arabic_animations/
+├── __init__.py
+├── core/
+│   ├── __init__.py
+│   ├── scene.py        # Base scene class
+│   ├── text.py         # Text objects
+│   └── renderer.py     # Rendering engine
+├── utils/
+│   ├── __init__.py
+│   └── preview.py      # Live preview functionality
+├── examples/
+│   └── basic_text.py
+├── main.py
+└── cli.py             # Command line interface
