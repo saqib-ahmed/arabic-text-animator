@@ -4,6 +4,7 @@ gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Pango, PangoCairo
 import numpy as np
+from .color import Colors
 
 class Scene:
     def __init__(self, width=1920, height=1080, fps=60):
@@ -26,6 +27,10 @@ class Scene:
         current_delay = 0
 
         for obj in objects:
+            # Set proper positioning for each object
+            if hasattr(obj, 'set_scene_dimensions'):
+                obj.set_scene_dimensions(self.width, self.height)
+
             if serial:
                 obj.start_time = current_delay
                 current_delay += obj.duration
@@ -41,8 +46,9 @@ class Scene:
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.width, self.height)
         ctx = cairo.Context(surface)
 
-        # Clear background
-        ctx.set_source_rgb(1, 1, 1)
+        # Clear background with specified color
+        bg_color = getattr(self, 'background_color', Colors.PAPER_WHITE)
+        ctx.set_source_rgba(*bg_color.to_rgb())
         ctx.paint()
 
         # Render all objects

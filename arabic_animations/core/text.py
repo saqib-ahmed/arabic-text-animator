@@ -6,20 +6,23 @@ from gi.repository import Pango, PangoCairo
 import math
 import traceback
 import logging
+from .position import Position, Padding, calculate_position
+from .color import Color, Colors, Style
 
 logger = logging.getLogger('arabic_animations')
 
 class Text:
-    def __init__(self, text, position=(0, 0), font_name="DecoType Thuluth",
-                 font_size=72, color=(0, 0, 0), stroke_width=2.0,
-                 write_duration=1.0):
+    def __init__(self, text, position=Position.CENTER, padding=None,
+                 font_name="DecoType Thuluth", font_size=72,
+                 style: Style = None, write_duration=1.0):
         self.text = text
-        self.position = position
+        self.position_type = position if isinstance(position, Position) else Position.CENTER
+        self.padding = padding if padding else Padding()
         self.font_name = font_name
         self.font_size = font_size
-        self.color = color
-        self.stroke_width = stroke_width
+        self.style = style if style else Style()
         self.duration = write_duration
+        self._position = (0, 0)
         self._init_path()
 
     def _init_path(self):
@@ -38,27 +41,39 @@ class Text:
             layout.set_alignment(Pango.Alignment.RIGHT)
             layout.set_auto_dir(True)
 
-            # Get text extents to verify layout
+            # Get text extents to calculate position
             ink_rect, logical_rect = layout.get_pixel_extents()
             logger.debug(f"Text extents - ink: {ink_rect}, logical: {logical_rect}")
 
             if logical_rect.width == 0 or logical_rect.height == 0:
                 raise ValueError("Text layout has zero size - font might not be available")
 
-            ctx.move_to(*self.position)
-            PangoCairo.layout_path(ctx, layout)
-            path = ctx.copy_path_flat()
+            # Store text dimensions for scene calculations
+            self.width = logical_rect.width
+            self.height = logical_rect.height
 
-            # Group into strokes
-            self.strokes = self._group_strokes(path)
-            logger.debug(f"Created {len(self.strokes)} strokes")
-            self.stroke_lengths = self._calculate_lengths()
-            self.total_length = sum(self.stroke_lengths)
+            # Position will be set by scene when adding the text
+            self._layout = layout
+            self._calculate_path()
 
         except Exception as e:
             logger.error(f"Error initializing text: {e}")
-            logger.error(traceback.format_exc())
+            logger.debug(traceback.format_exc())
             raise
+
+    def _calculate_path(self):
+        """Calculate the path based on current position"""
+        surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1)
+        ctx = cairo.Context(surface)
+
+        ctx.move_to(*self._position)
+        PangoCairo.layout_path(ctx, self._layout)
+        path = ctx.copy_path_flat()
+
+        self.strokes = self._group_strokes(path)
+        logger.debug(f"Created {len(self.strokes)} strokes")
+        self.stroke_lengths = self._calculate_lengths()
+        self.total_length = sum(self.stroke_lengths)
 
     def _group_strokes(self, path):
         """Group path elements into continuous strokes"""
@@ -101,10 +116,47 @@ class Text:
 
         progress = t / self.duration
         target_length = progress * self.total_length
+
+        # Apply shadow if specified
+        if self.style.shadow_color:
+            ctx.save()
+            ctx.translate(*self.style.shadow_offset)
+            self._render_strokes(ctx, target_length, self.style.shadow_color)
+            ctx.restore()
+
+        # Apply glow if specified
+        if self.style.glow_color and self.style.glow_radius > 0:
+            for i in range(3):
+                ctx.save()
+                ctx.set_line_width(self.style.stroke_width + self.style.glow_radius * (i+1)/3)
+                glow_alpha = self.style.glow_color.a * (3-i)/3
+                glow = self.style.glow_color.with_alpha(glow_alpha)
+                self._render_strokes(ctx, target_length, glow)
+                ctx.restore()
+
+        # Render fill if specified
+        if self.style.fill_color:
+            ctx.save()
+            self._render_strokes(ctx, target_length, self.style.fill_color, True)
+            ctx.restore()
+
+        # Render stroke
+        ctx.set_line_width(self.style.stroke_width)
+        self._render_strokes(ctx, target_length, self.style.stroke_color)
+
+    def _render_strokes(self, ctx, target_length, color, fill=False):
+        """Helper method to render strokes"""
         current_length = 0
 
-        ctx.set_source_rgb(*self.color)
-        ctx.set_line_width(self.stroke_width)
+        # Handle gradient if specified
+        if self.style.gradient and not fill:
+            pat = cairo.LinearGradient(0, 0,
+                                     *self.style.gradient_direction or (0, self.height))
+            pat.add_color_stop_rgba(0, *self.style.gradient[0].to_rgb())
+            pat.add_color_stop_rgba(1, *self.style.gradient[1].to_rgb())
+            ctx.set_source(pat)
+        else:
+            ctx.set_source_rgba(*color.to_rgb())
 
         for stroke_idx, stroke in enumerate(self.strokes):
             if current_length >= target_length:
@@ -133,6 +185,16 @@ class Text:
                         break
 
             ctx.stroke()
+
+    def set_scene_dimensions(self, width, height):
+        """Update position based on scene dimensions"""
+        self._position = calculate_position(
+            self.width, self.height,
+            width, height,
+            self.position_type,
+            self.padding
+        )
+        self._calculate_path()
 
     @staticmethod
     def list_available_fonts():
