@@ -12,13 +12,29 @@ class Scene:
         self.fps = fps
         self.duration = 0
         self.objects = []
+        self.serial = False
 
-    def add(self, *objects):
-        """Add objects to the scene"""
+    def add(self, *objects, serial=False):
+        """
+        Add objects to the scene
+
+        Args:
+            *objects: Objects to add
+            serial: If True, objects will animate one after another
+        """
+        self.serial = serial
+        current_delay = 0
+
         for obj in objects:
+            if serial:
+                obj.start_time = current_delay
+                current_delay += obj.duration
+            else:
+                obj.start_time = 0
+
             self.objects.append(obj)
-            if hasattr(obj, 'duration'):
-                self.duration = max(self.duration, obj.duration)
+
+        self.duration = current_delay if serial else max(obj.duration for obj in objects)
 
     def render_frame(self, t):
         """Render a single frame at time t"""
@@ -32,7 +48,12 @@ class Scene:
         # Render all objects
         for obj in self.objects:
             if hasattr(obj, 'render'):
-                obj.render(ctx, t)
+                # Only render if within object's time window
+                if t >= obj.start_time and t <= obj.start_time + obj.duration:
+                    obj.render(ctx, t - obj.start_time)
+                elif t > obj.start_time + obj.duration:
+                    # Render final state for completed animations
+                    obj.render(ctx, obj.duration)
 
         # Convert to numpy array
         data = surface.get_data()

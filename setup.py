@@ -10,6 +10,7 @@ setup(
         'numpy>=1.24.0',
         'opencv-python>=4.8.0',
         'click>=8.1.7',
+        'PyQt5>=5.15.0',
     ],
     entry_points={
         'console_scripts': [
