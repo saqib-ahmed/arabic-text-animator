@@ -1,33 +1,42 @@
 import cairo
 import gi
+from typing import List, Any, Optional
 gi.require_version('Pango', '1.0')
 gi.require_version('PangoCairo', '1.0')
 from gi.repository import Pango, PangoCairo
 import numpy as np
-from .color import Colors
+from .color import Colors, Color
 
 class Scene:
-    def __init__(self, width=1920, height=1080, fps=60):
+    """
+    A scene represents a complete animation with one or more text objects.
+
+    Args:
+        width: Width of the scene in pixels
+        height: Height of the scene in pixels
+        fps: Frames per second for the animation
+    """
+    def __init__(self, width: int = 1920, height: int = 1080, fps: int = 60):
         self.width = width
         self.height = height
         self.fps = fps
         self.duration = 0
-        self.objects = []
+        self.objects: List[Any] = []
         self.serial = False
+        self.background_color: Color = Colors.PAPER_WHITE
 
-    def add(self, *objects, serial=False):
+    def add(self, *objects: Any, serial: bool = False) -> None:
         """
-        Add objects to the scene
+        Add objects to the scene.
 
         Args:
-            *objects: Objects to add
-            serial: If True, objects will animate one after another
+            *objects: One or more objects to add to the scene
+            serial: If True, objects will animate one after another. If False, they animate simultaneously.
         """
         self.serial = serial
         current_delay = 0
 
         for obj in objects:
-            # Set proper positioning for each object
             if hasattr(obj, 'set_scene_dimensions'):
                 obj.set_scene_dimensions(self.width, self.height)
 
@@ -41,24 +50,29 @@ class Scene:
 
         self.duration = current_delay if serial else max(obj.duration for obj in objects)
 
-    def render_frame(self, t):
-        """Render a single frame at time t"""
+    def render_frame(self, t: float) -> np.ndarray:
+        """
+        Render a single frame at time t.
+
+        Args:
+            t: Time in seconds
+
+        Returns:
+            A numpy array representing the frame in RGBA format
+        """
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, self.width, self.height)
         ctx = cairo.Context(surface)
 
         # Clear background with specified color
-        bg_color = getattr(self, 'background_color', Colors.PAPER_WHITE)
-        ctx.set_source_rgba(*bg_color.to_rgb())
+        ctx.set_source_rgba(*self.background_color.to_rgb())
         ctx.paint()
 
         # Render all objects
         for obj in self.objects:
             if hasattr(obj, 'render'):
-                # Only render if within object's time window
                 if t >= obj.start_time and t <= obj.start_time + obj.duration:
                     obj.render(ctx, t - obj.start_time)
                 elif t > obj.start_time + obj.duration:
-                    # Render final state for completed animations
                     obj.render(ctx, obj.duration)
 
         # Convert to numpy array

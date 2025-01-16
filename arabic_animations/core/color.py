@@ -1,6 +1,6 @@
 from enum import Enum
 from dataclasses import dataclass, field
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Optional, List, Dict
 import colorsys
 
 class ColorFormat(Enum):

@@ -1,7 +1,9 @@
 from enum import Enum
 from dataclasses import dataclass
+from typing import Tuple, Optional
 
 class Position(Enum):
+    """Predefined positions for text placement"""
     TOP = "top"
     BOTTOM = "bottom"
     LEFT = "left"
@@ -14,28 +16,51 @@ class Position(Enum):
 
 @dataclass
 class Padding:
+    """
+    Padding configuration for text positioning
+
+    Args:
+        top: Padding from top edge
+        right: Padding from right edge
+        bottom: Padding from bottom edge
+        left: Padding from left edge
+    """
     top: float = 0
     right: float = 0
     bottom: float = 0
     left: float = 0
 
     @classmethod
-    def all(cls, value: float):
+    def all(cls, value: float) -> 'Padding':
+        """Create padding with same value on all sides"""
         return cls(value, value, value, value)
 
     @classmethod
-    def horizontal(cls, value: float):
+    def horizontal(cls, value: float) -> 'Padding':
+        """Create padding with horizontal values only"""
         return cls(0, value, 0, value)
 
     @classmethod
-    def vertical(cls, value: float):
+    def vertical(cls, value: float) -> 'Padding':
+        """Create padding with vertical values only"""
         return cls(value, 0, value, 0)
 
 def calculate_position(text_width: float, text_height: float,
                       scene_width: float, scene_height: float,
-                      position: Position, padding: Padding = None) -> tuple[float, float]:
+                      position: Position, padding: Optional[Padding] = None) -> Tuple[float, float]:
     """
-    Calculate the x, y coordinates for text placement based on position and padding
+    Calculate the x, y coordinates for text placement
+
+    Args:
+        text_width: Width of the text
+        text_height: Height of the text
+        scene_width: Width of the scene
+        scene_height: Height of the scene
+        position: Position enum value
+        padding: Optional padding configuration
+
+    Returns:
+        Tuple of (x, y) coordinates
     """
     if padding is None:
         padding = Padding()

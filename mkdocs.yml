@@ -1,0 +1,65 @@
+site_name: Arabic Animations
+site_description: A Python library for creating Arabic text writing animations
+repo_url: https://github.com/saqib-ahmed/arabic-text-animator
+edit_uri: edit/main/docs/
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: amber
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - navigation.tabs
+    - navigation.versions
+
+extra:
+  version:
+    provider: mike
+
+plugins:
+  - search
+  - mike:
+      version_selector: true
+      canonical_version: latest
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: true
+            show_root_heading: true
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quickstart.md
+  - User Guide:
+    - Positioning: user-guide/positioning.md
+    - Styling: user-guide/styling.md
+    - Colors: user-guide/colors.md
+    - Animations: user-guide/animations.md
+  - API Reference:
+    - Scene: api-reference/scene.md
+    - Text: api-reference/text.md
+    - Position: api-reference/position.md
+    - Color: api-reference/color.md
+  - Examples:
+    - Basic Examples: examples/basic.md
+    - Advanced Examples: examples/advanced.md

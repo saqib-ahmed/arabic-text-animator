@@ -1,3 +1,4 @@
+from typing import Tuple, Optional, List
 import cairo
 import gi
 gi.require_version('Pango', '1.0')
@@ -12,9 +13,26 @@ from .color import Color, Colors, Style
 logger = logging.getLogger('arabic_animations')
 
 class Text:
-    def __init__(self, text, position=Position.CENTER, padding=None,
-                 font_name="DecoType Thuluth", font_size=72,
-                 style: Style = None, write_duration=1.0):
+    """
+    A text object that can be animated.
+
+    Args:
+        text: The text to display
+        position: Position enum value or tuple of coordinates
+        padding: Padding object for spacing
+        font_name: Name of the font to use
+        font_size: Size of the font in points
+        style: Style object for visual appearance
+        write_duration: Duration of the writing animation in seconds
+    """
+    def __init__(self,
+                 text: str,
+                 position: Position = Position.CENTER,
+                 padding: Optional[Padding] = None,
+                 font_name: str = "DecoType Thuluth",
+                 font_size: int = 72,
+                 style: Optional[Style] = None,
+                 write_duration: float = 1.0):
         self.text = text
         self.position_type = position if isinstance(position, Position) else Position.CENTER
         self.padding = padding if padding else Padding()
@@ -22,10 +40,10 @@ class Text:
         self.font_size = font_size
         self.style = style if style else Style()
         self.duration = write_duration
-        self._position = (0, 0)
+        self._position: Tuple[float, float] = (0, 0)
         self._init_path()
 
-    def _init_path(self):
+    def _init_path(self) -> None:
         """Initialize the text path"""
         try:
             logger.debug(f"Initializing text: {self.text}")
@@ -61,7 +79,7 @@ class Text:
             logger.debug(traceback.format_exc())
             raise
 
-    def _calculate_path(self):
+    def _calculate_path(self) -> None:
         """Calculate the path based on current position"""
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1)
         ctx = cairo.Context(surface)
@@ -75,8 +93,16 @@ class Text:
         self.stroke_lengths = self._calculate_lengths()
         self.total_length = sum(self.stroke_lengths)
 
-    def _group_strokes(self, path):
-        """Group path elements into continuous strokes"""
+    def _group_strokes(self, path: List[Tuple[int, Tuple[float, float]]]) -> List[List[Tuple[int, Tuple[float, float]]]]:
+        """
+        Group path elements into continuous strokes
+
+        Args:
+            path: List of path elements from cairo
+
+        Returns:
+            List of strokes, where each stroke is a list of path elements
+        """
         path_elements = list(path)
         strokes = []
         current_stroke = []
@@ -96,8 +122,13 @@ class Text:
         strokes.sort(key=lambda s: -s[0][1][0])  # Sort by x-coordinate in reverse
         return strokes
 
-    def _calculate_lengths(self):
-        """Calculate the length of each stroke"""
+    def _calculate_lengths(self) -> List[float]:
+        """
+        Calculate the length of each stroke
+
+        Returns:
+            List of stroke lengths
+        """
         lengths = []
         for stroke in self.strokes:
             length = 0
@@ -109,8 +140,14 @@ class Text:
             lengths.append(length)
         return lengths
 
-    def render(self, ctx, t):
-        """Render the text at time t"""
+    def render(self, ctx: cairo.Context, t: float) -> None:
+        """
+        Render the text at time t
+
+        Args:
+            ctx: Cairo context to draw on
+            t: Time in seconds
+        """
         if t > self.duration:
             t = self.duration
 
@@ -144,8 +181,16 @@ class Text:
         ctx.set_line_width(self.style.stroke_width)
         self._render_strokes(ctx, target_length, self.style.stroke_color)
 
-    def _render_strokes(self, ctx, target_length, color, fill=False):
-        """Helper method to render strokes"""
+    def _render_strokes(self, ctx: cairo.Context, target_length: float, color: Color, fill: bool = False) -> None:
+        """
+        Helper method to render strokes
+
+        Args:
+            ctx: Cairo context to draw on
+            target_length: Target length to draw up to
+            color: Color to use for rendering
+            fill: Whether to fill the path instead of stroking
+        """
         current_length = 0
 
         # Handle gradient if specified
@@ -186,7 +231,7 @@ class Text:
 
             ctx.stroke()
 
-    def set_scene_dimensions(self, width, height):
+    def set_scene_dimensions(self, width: int, height: int) -> None:
         """Update position based on scene dimensions"""
         self._position = calculate_position(
             self.width, self.height,
@@ -197,8 +242,8 @@ class Text:
         self._calculate_path()
 
     @staticmethod
-    def list_available_fonts():
-        """List all available Pango fonts"""
+    def list_available_fonts() -> None:
+        """List all available Pango fonts to stdout"""
         try:
             surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1, 1)
             ctx = cairo.Context(surface)

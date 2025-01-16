@@ -1,7 +1,9 @@
 import click
 import cv2
+from typing import Dict, Any, Optional
 from .utils.preview import LivePreview
 import logging
+from arabic_animations import __version__
 
 # Set up logging
 logger = logging.getLogger('arabic_animations')
@@ -11,15 +13,17 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 @click.group()
-def cli():
+def cli() -> None:
+    """Arabic Animations CLI"""
     pass
 
 @cli.command()
-@click.argument('script_path')
+@click.argument('script_path', type=click.Path(exists=True))
 @click.option('--preview', is_flag=True, help="Show live preview")
-@click.option('--output', help="Output video path")
+@click.option('--output', type=click.Path(), help="Output video path")
 @click.option('-v', '--verbose', is_flag=True, help="Enable verbose output")
-def render(script_path, preview, output, verbose):
+@click.option('--version', type=str, help="Version of the script to render")
+def render(script_path: str, preview: bool, output: Optional[str], verbose: bool) -> None:
     """Render animation from script"""
     # Set logging level based on verbosity
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
@@ -60,3 +64,9 @@ def render(script_path, preview, output, verbose):
 
         out.release()
         logger.info("Done!")
+
+@cli.command()
+def docs() -> None:
+    """Start the documentation server"""
+    import subprocess
+    subprocess.run(["mkdocs", "serve"])
