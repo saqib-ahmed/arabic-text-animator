@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arabic Text Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paper.js/0.12.17/paper-full.min.js"></script>
+    <meta charset="UTF-8">
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+            margin: 20px;
+        }
+        #controls {
+            margin: 20px;
+        }
+        .control-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 120px;
+        }
+        body {
+            font-family: 'DecoType Thuluth', Arial, sans-serif;
+        }
+        input[type="text"] {
+            font-family: 'DecoType Thuluth', Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <div class="control-group">
+            <label for="text">Arabic Text:</label>
+            <input type="text" id="text" value="بسم الله" dir="rtl">
+            <!-- <input type="text" id="text" value="Testing" dir="rtl"> -->
+        </div>
+        <div class="control-group">
+            <label for="fontSize">Font Size:</label>
+            <input type="range" id="fontSize" min="20" max="200" value="72">
+            <span id="fontSizeValue">72</span>
+        </div>
+        <div class="control-group">
+            <label for="strokeWidth">Stroke Width:</label>
+            <input type="range" id="strokeWidth" min="1" max="10" value="2">
+            <span id="strokeWidthValue">2</span>
+        </div>
+        <div class="control-group">
+            <label for="strokeColor">Stroke Color:</label>
+            <input type="color" id="strokeColor" value="#000000">
+        </div>
+        <div class="control-group">
+            <label for="animationSpeed">Speed:</label>
+            <input type="range" id="animationSpeed" min="1" max="100" value="50">
+            <span id="speedValue">50</span>
+        </div>
+        <button id="startAnimation">Start Animation</button>
+        <button id="resetAnimation">Reset</button>
+    </div>
+    <canvas id="myCanvas" width="800" height="400"></canvas>
+
+    <script type="text/javascript">
+        window.onload = function() {
+            // Initialize Paper.js
+            paper.setup('myCanvas');
+
+            // Get UI elements
+            const textInput = document.getElementById('text');
+            const fontSizeInput = document.getElementById('fontSize');
+            const strokeWidthInput = document.getElementById('strokeWidth');
+            const strokeColorInput = document.getElementById('strokeColor');
+            const speedInput = document.getElementById('animationSpeed');
+            const startButton = document.getElementById('startAnimation');
+            const resetButton = document.getElementById('resetAnimation');
+
+            // Update value displays
+            fontSizeInput.addEventListener('input', () => {
+                document.getElementById('fontSizeValue').textContent = fontSizeInput.value;
+            });
+            strokeWidthInput.addEventListener('input', () => {
+                document.getElementById('strokeWidthValue').textContent = strokeWidthInput.value;
+            });
+            speedInput.addEventListener('input', () => {
+                document.getElementById('speedValue').textContent = speedInput.value;
+            });
+
+            let textPath = null;
+            let animationPaths = [];
+            let currentPathIndex = 0;
+            let progress = 0;
+            let isAnimating = false;
+
+            function createTextPaths() {
+                // Clear previous paths
+                if (animationPaths.length) {
+                    animationPaths.forEach(p => p.remove());
+                    animationPaths = [];
+                }
+                if (textPath) {
+                    textPath.remove();
+                }
+
+                // Create the text
+                textPath = new paper.PointText({
+                    point: paper.view.center,
+                    content: textInput.value,
+                    fillColor: null,
+                    strokeColor: strokeColorInput.value,
+                    strokeWidth: parseInt(strokeWidthInput.value),
+                    fontSize: parseInt(fontSizeInput.value),
+                    fontFamily: 'DecoType Thuluth'
+                });
+
+                // Create individual paths for each character
+                // Split text into characters, reverse for RTL
+                const chars = Array.from(textInput.value).reverse();
+                let xOffset = textPath.bounds.width / 2;  // Start from right side
+
+                chars.forEach((char, index) => {
+                    const charPath = new paper.PointText({
+                        point: [paper.view.center.x + xOffset, paper.view.center.y],
+                        content: char,
+                        fillColor: null,
+                        strokeColor: strokeColorInput.value,
+                        strokeWidth: parseInt(strokeWidthInput.value),
+                        fontSize: parseInt(fontSizeInput.value),
+                        fontFamily: 'DecoType Thuluth',
+                        opacity: 0
+                    });
+
+                    // Move left for next character
+                    xOffset -= charPath.bounds.width;
+
+                    animationPaths.push(charPath);
+                });
+
+                // Reverse animation paths array to animate from right to left
+                animationPaths.reverse();
+
+                textPath.remove();
+                currentPathIndex = 0;
+                progress = 0;
+            }
+
+            function onFrame(event) {
+                if (!isAnimating || currentPathIndex >= animationPaths.length) return;
+
+                const speed = parseInt(speedInput.value) / 50; // Normalize speed
+                progress += speed * 0.05;
+
+                if (progress >= 1) {
+                    animationPaths[currentPathIndex].opacity = 1;
+                    currentPathIndex++;
+                    progress = 0;
+
+                    if (currentPathIndex >= animationPaths.length) {
+                        isAnimating = false;
+                    }
+                } else {
+                    animationPaths[currentPathIndex].opacity = progress;
+                }
+            }
+
+            // Add frame handler
+            paper.view.onFrame = onFrame;
+
+            // Start animation button
+            startButton.addEventListener('click', () => {
+                if (!animationPaths.length) {
+                    createTextPaths();
+                }
+                currentPathIndex = 0;
+                progress = 0;
+                animationPaths.forEach(p => p.opacity = 0);
+                isAnimating = true;
+            });
+
+            // Reset animation button
+            resetButton.addEventListener('click', () => {
+                isAnimating = false;
+                currentPathIndex = 0;
+                progress = 0;
+                if (animationPaths.length) {
+                    animationPaths.forEach(p => p.opacity = 0);
+                }
+            });
+
+            // Initial text paths
+            createTextPaths();
+        };
+    </script>
+</body>
+</html>
