@@ -1,18 +1,31 @@
-# Arabic Animations
+# Arabic Text Animator
 
-A Python library for creating Arabic text writing animations, similar to Manim but specialized for Arabic calligraphy and text animations.
+Welcome to Arabic Text Animator, a Python library for creating beautiful Arabic text writing animations.
 
 ## Features
 
-- Create smooth writing animations for Arabic text
-- Support for RTL text rendering
-- Live preview during development
-- Export to MP4 video files
-- Customizable text properties (font, size, color, stroke width)
-- Multiple text elements with different timings
-- Command-line interface with preview and render options
+- 🎨 Create smooth writing animations for Arabic text
+- 🔠 Support for RTL text rendering
+- 📐 Flexible positioning and layout system
+- 🎯 Easy-to-use API
+- 🎬 Export to various video formats
+- 🖥️ Live preview during development
+- ⚙️ Command-line interface with preview and render options
 
-## Quick Example
+## Quick Links
+
+- 📚 [Getting Started](getting-started/index.md)
+- 📖 [User Guide](user-guide/index.md)
+- 🔍 [API Reference](api-reference/index.md)
+- 💡 [Examples](examples/index.md)
+
+## Installation
+
+```bash
+pip install arabic-text-animator
+```
+
+## Basic Usage
 
 ```python
 from arabic_animations.core.scene import Scene
@@ -38,3 +51,26 @@ text = Text(
 
 scene.add(text)
 ```
+
+## Command Line Usage
+
+```bash
+# Preview animation
+ata render my_animation.py --preview
+
+# Render to video
+ata render my_animation.py --output my_animation.mp4
+```
+
+## Contributing
+
+We welcome contributions! Check out our [GitHub repository](https://github.com/saqib-ahmed/arabic-text-animator) for:
+
+- Source code
+- Issue tracking
+- Feature requests
+- Pull requests
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/saqib-ahmed/arabic-text-animator/blob/main/LICENSE) file for details.

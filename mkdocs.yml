@@ -3,26 +3,58 @@ site_description: A Python library for creating Arabic text writing animations
 repo_url: https://github.com/saqib-ahmed/arabic-text-animator
 site_url: https://saqib-ahmed.github.io/arabic-text-animator/
 edit_uri: edit/main/docs/
+
 theme:
   name: material
   palette:
-    primary: indigo
-    accent: amber
+    # Light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
+    # Navigation
     - navigation.instant
     - navigation.tracking
     - navigation.sections
     - navigation.expand
+    - navigation.indexes  # Allows index pages for sections
     - navigation.top
+    # Search
     - search.suggest
     - search.highlight
+    # Content
     - content.tabs.link
+    - content.code.copy  # Adds copy button to code blocks
+    - content.code.annotate  # Allows code annotations
+    # Header
+    - header.autohide
+    # Navigation style - tabs only for top-level
     - navigation.tabs
+    - navigation.tabs.sticky
+    # Version selector
     - navigation.versions
 
 extra:
   version:
     provider: mike
+    default: stable
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/saqib-ahmed/arabic-text-animator
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/arabic-text-animator
 
 plugins:
   - search
@@ -38,31 +70,56 @@ plugins:
           rendering:
             show_source: true
             show_root_heading: true
+            show_root_toc_entry: true
+            show_category_heading: true
+            show_signature_annotations: true
 
 markdown_extensions:
+  # Code blocks
   - pymdownx.highlight:
       anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
   - pymdownx.superfences
+  # Admonitions
   - admonition
   - pymdownx.details
+  # Tables
+  - tables
+  # Lists
+  - def_list
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  # Others
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
 
+# Navigation structure
 nav:
-  - Home: index.md
+  - Home:
+    - Overview: index.md
   - Getting Started:
+    - getting-started/index.md  # Add an index page for this section
     - Installation: getting-started/installation.md
     - Quick Start: getting-started/quickstart.md
   - User Guide:
+    - user-guide/index.md  # Add an index page for this section
     - Positioning: user-guide/positioning.md
     - Styling: user-guide/styling.md
     - Colors: user-guide/colors.md
     - Animations: user-guide/animations.md
   - API Reference:
+    - api-reference/index.md  # Add an index page for this section
     - Scene: api-reference/scene.md
     - Text: api-reference/text.md
     - Position: api-reference/position.md
     - Color: api-reference/color.md
   - Examples:
+    - examples/index.md  # Add an index page for this section
     - Basic Examples: examples/basic.md
     - Advanced Examples: examples/advanced.md
