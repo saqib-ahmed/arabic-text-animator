@@ -56,13 +56,18 @@ def main():
     # Git commands
     subprocess.run(["git", "add", "arabic_animations/__init__.py"])
     subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"])
+
+    # Create tag without pushing
     subprocess.run(["git", "tag", f"v{new_version}"])
 
     print(f"\nVersion bumped to {new_version}")
     print("\nNext steps:")
     print("1. Push changes: git push origin main")
-    print("2. Push tags: git push origin v{new_version}")
-    print("3. Wait for GitHub Actions to create release")
+    print(f"2. Push tag: git push origin v{new_version}")
+    print("3. The GitHub Actions workflow will automatically:")
+    print("   - Build and publish to PyPI")
+    print("   - Create a GitHub release")
+    print("   - Deploy documentation")
 
 if __name__ == "__main__":
     main()
