@@ -2,7 +2,7 @@ from arabic_animations import __version__
 from setuptools import setup, find_packages
 
 setup(
-    name="arabic_animations",
+    name="arabic-text-animator",
     version=__version__,
     packages=find_packages(),
     install_requires=[
@@ -28,6 +28,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'ata=arabic_animations.main:cli',
             'arabic-animate=arabic_animations.main:cli',
         ],
     },
