@@ -22,7 +22,6 @@ def cli() -> None:
 @click.option('--preview', is_flag=True, help="Show live preview")
 @click.option('--output', type=click.Path(), help="Output video path")
 @click.option('-v', '--verbose', is_flag=True, help="Enable verbose output")
-@click.option('--version', type=str, help="Version of the script to render")
 def render(script_path: str, preview: bool, output: Optional[str], verbose: bool) -> None:
     """Render animation from script"""
     # Set logging level based on verbosity
@@ -30,6 +29,13 @@ def render(script_path: str, preview: bool, output: Optional[str], verbose: bool
 
     logger.debug(f"Loading script: {script_path}")
 
+    if preview:
+        logger.debug("Starting preview...")
+        preview_window = LivePreview(script_path, verbose=verbose)
+        preview_window.start()
+        return
+
+    # Load scene for rendering
     namespace = {}
     with open(script_path) as f:
         script_content = f.read()
@@ -37,15 +43,9 @@ def render(script_path: str, preview: bool, output: Optional[str], verbose: bool
         exec(script_content, namespace)
 
     scene = namespace.get('scene')
-    logger.debug(f"Scene object: {scene}")
     if not scene:
         click.echo("Error: Script must define a 'scene' object")
         return
-
-    if preview:
-        logger.debug("Starting preview...")
-        preview_window = LivePreview(scene, verbose=verbose)
-        preview_window.start()
 
     if output:
         logger.info(f"Rendering to {output}...")

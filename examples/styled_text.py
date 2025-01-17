@@ -9,10 +9,10 @@ scene.background_color = Colors.PAPER_SEPIA  # Set sepia background
 
 # Create styled text
 title_style = Style(
-    stroke_color=Color.from_hex("#B8860B"),  # Dark golden color
+    stroke_color=Color.from_hex("#000000"),  # Dark golden color
     fill_color=Color.from_hex("#FFD700"),    # Golden fill
     stroke_width=3.0,
-    shadow_color=Color.from_hex("#00000066"),  # Semi-transparent black
+    # shadow_color=Color.from_hex("#00000066"),  # Semi-transparent black
     shadow_offset=(5, 5),
     shadow_blur=2.0
 )
@@ -33,7 +33,7 @@ text1 = Text(
     font_name="DecoType Thuluth II",
     font_size=128,
     style=title_style,
-    write_duration=2.0
+    write_duration=10.0
 )
 
 text2 = Text(

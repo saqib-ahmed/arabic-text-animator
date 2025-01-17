@@ -203,13 +203,13 @@ class Text:
         else:
             ctx.set_source_rgba(*color.to_rgb())
 
+        # Create a single path for all strokes that should be rendered
+        ctx.new_path()
         for stroke_idx, stroke in enumerate(self.strokes):
             if current_length >= target_length:
                 break
 
-            ctx.new_path()
             ctx.move_to(*stroke[0][1])
-
             stroke_length = self.stroke_lengths[stroke_idx]
 
             for i in range(1, len(stroke)):
@@ -229,6 +229,10 @@ class Text:
                         ctx.line_to(new_x, new_y)
                         break
 
+        # Fill or stroke the entire path at once
+        if fill:
+            ctx.fill()
+        else:
             ctx.stroke()
 
     def set_scene_dimensions(self, width: int, height: int) -> None:
