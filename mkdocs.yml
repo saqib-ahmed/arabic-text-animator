@@ -1,6 +1,7 @@
 site_name: Arabic Animations
 site_description: A Python library for creating Arabic text writing animations
 repo_url: https://github.com/saqib-ahmed/arabic-text-animator
+site_url: https://saqib-ahmed.github.io/arabic-text-animator/
 edit_uri: edit/main/docs/
 theme:
   name: material
@@ -27,7 +28,9 @@ plugins:
   - search
   - mike:
       version_selector: true
-      canonical_version: latest
+      canonical_version: stable
+      alias_type: redirects
+      deploy_prefix: ''
   - mkdocstrings:
       default_handler: python
       handlers:

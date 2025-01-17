@@ -6,10 +6,16 @@ on:
       - 'v*'
 
 jobs:
-  release-build:
+  release:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    environment: pypi
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -32,30 +38,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install build
+          pip install -e .[docs]
 
       - name: Build package
         run: python -m build
-
-      - name: Upload distribution artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
-
-  pypi-publish:
-    needs: release-build
-    runs-on: ubuntu-latest
-    environment: pypi
-    permissions:
-      id-token: write  # Required for OIDC
-      contents: write  # Required for creating releases
-
-    steps:
-      - name: Download distribution artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: release-dists
-          path: dist/
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
@@ -65,3 +51,15 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+
+      - name: Configure Git for docs
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy versioned docs
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          touch docs/.nojekyll
+          # Deploy version-specific docs and mark as stable
+          mike deploy --push --update-aliases $VERSION stable
