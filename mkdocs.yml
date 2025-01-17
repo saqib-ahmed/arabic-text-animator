@@ -29,7 +29,7 @@ plugins:
   - mike:
       version_selector: true
       canonical_version: stable
-      alias_type: redirects
+      alias_type: redirect
       deploy_prefix: ''
   - mkdocstrings:
       default_handler: python
